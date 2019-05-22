@@ -1,0 +1,9 @@
+#Format
+#Two lines of content that are not prefixed with #.
+#First the raw data, second the processed/cleaned data.
+#Everithng that starts with # is ignore by the loader.
+
+#Unprocessed text
+The content of this sentences will be processed/cleaned to get a compressed version of it.
+#Cleaned data
+content of sentence will process/clean to compress version
