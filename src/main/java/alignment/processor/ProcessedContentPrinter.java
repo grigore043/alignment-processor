@@ -21,14 +21,17 @@ public class ProcessedContentPrinter {
 	}
 
 	public void print() {
+		StringBuilder differenceBuilder = new StringBuilder(
+				new StringBuilder(StringUtils.repeat(
+						ContentProcessor.DASH,
+						this.contentProcessor.getSourceContent().getRawContent().length())));
+		differenceBuilder = this.contentProcessor.carrotMaskBuilder(
+				this.contentProcessor.asteriskMaskBuilder(
+						differenceBuilder.toString()).toString());
 		LOGGER.info("\n\n"
 				+ this.contentProcessor.getSourceContent().getRawContent()
 				+ "\n"
-				+ this.contentProcessor.carrotMaskBuilder(
-						this.contentProcessor.asteriskMaskBuilder(
-								new StringBuilder(StringUtils.repeat(
-										ContentProcessor.DASH,
-										this.contentProcessor.getSourceContent().getRawContent().length()))))
+				+ differenceBuilder
 				+ "\n"
 				+ this.contentProcessor.cleanContentBuilder());
 	}

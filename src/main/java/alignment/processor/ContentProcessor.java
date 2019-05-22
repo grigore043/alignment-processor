@@ -92,22 +92,22 @@ public class ContentProcessor {
 	 * This method will replace certain characters inside the {@link StringBuilder} parameter
 	 * based on the carrotMaskingPattern.
 	 *
-	 * @param stringBuilder a non null instance of {@link StringBuilder}.
+	 * @param maskingTarget a non null instance of {@link String}.
 	 * @return the same {@link StringBuilder} instance.
 	 */
-	public StringBuilder carrotMaskBuilder(@NotNull StringBuilder stringBuilder) {
-		return maskBuilder(stringBuilder, this.carrotMaskingPattern, CARROT);
+	public StringBuilder carrotMaskBuilder(@NotNull String maskingTarget) {
+		return maskBuilder(maskingTarget, this.carrotMaskingPattern, CARROT);
 	}
 
 	/**
 	 * This method will replace certain characters inside the {@link StringBuilder} parameter
 	 * based on the asteriskContentPattern.
 	 *
-	 * @param stringBuilder a non null instance of {@link StringBuilder}.
+	 * @param maskingTarget a non null instance of {@link String}.
 	 * @return the same {@link StringBuilder} instance.
 	 */
-	public StringBuilder asteriskMaskBuilder(@NotNull StringBuilder stringBuilder) {
-		return maskBuilder(stringBuilder, this.asteriskContentPattern, ASTERISK);
+	public StringBuilder asteriskMaskBuilder(@NotNull String maskingTarget) {
+		return maskBuilder(maskingTarget, this.asteriskContentPattern, ASTERISK);
 	}
 
 	/**
@@ -138,12 +138,13 @@ public class ContentProcessor {
 	 * based on the given instance of {@link Pattern}.
 	 * For masking will be used the replacement parameter.
 	 *
-	 * @param stringBuilder a non null instance of {@link StringBuilder}.
+	 * @param maskingTarget a non null instance of {@link String}.
 	 * @param pattern       a non null compiled instance of {@link Pattern}.
 	 * @param replacement   a non null replacement string.
 	 * @return
 	 */
-	protected StringBuilder maskBuilder(@NotNull StringBuilder stringBuilder, @NotNull Pattern pattern, @NotNull String replacement) {
+	protected StringBuilder maskBuilder(@NotNull String maskingTarget, @NotNull Pattern pattern, @NotNull String replacement) {
+		StringBuilder stringBuilder =  new StringBuilder(maskingTarget);
 		Matcher matcher = pattern.matcher(this.sourceContent.getRawContent());
 		if (matcher.find()) {
 			for (int i = 1; i <= matcher.groupCount(); i++) {
