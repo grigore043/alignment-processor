@@ -136,7 +136,7 @@ public class MainView extends VerticalLayout {
 		resultSectionClickable.add(
 				new Label(CLICKABLE_RESULT),
 				rawContentDiv,
-				differenceDiv,
+//				differenceDiv,
 				cleanedContentDiv);
 	}
 
