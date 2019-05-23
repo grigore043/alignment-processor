@@ -17,7 +17,7 @@ public class ContentProcessor {
 
 	private static final Pattern SPLIT_PATTERN = Pattern.compile("\\s|,|\\.|\"|\\\\|\\/");
 	private static final Pattern BETWEEN_GROUPS_PATTERN = Pattern.compile("(?:[\\s\\S]+)");
-	private static final Pattern SUFFIX_MASKING_PATTERN = Pattern.compile("(\\w*)?(?:[\\s\\S]+)");
+	private static final Pattern SUFFIX_MASKING_PATTERN = Pattern.compile("(\\w*)?(?:.*)");
 
 	public static final String CARROT = "^";
 	public static final String ASTERISK = "*";
