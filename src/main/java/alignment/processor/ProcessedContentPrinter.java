@@ -1,8 +1,14 @@
 package alignment.processor;
 
+import alignment.processor.content.ContentProcessor;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.page.Page;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Iterator;
+import java.util.List;
 import java.util.logging.Logger;
 
 public class ProcessedContentPrinter {
@@ -21,18 +27,16 @@ public class ProcessedContentPrinter {
 	}
 
 	public void print() {
-		StringBuilder differenceBuilder = new StringBuilder(
-				new StringBuilder(StringUtils.repeat(
-						ContentProcessor.DASH,
-						this.contentProcessor.getSourceContent().getRawContent().length())));
-		differenceBuilder = this.contentProcessor.carrotMaskBuilder(
-				this.contentProcessor.asteriskMaskBuilder(
-						differenceBuilder.toString()).toString());
+		String difference = StringUtils.repeat(
+				ContentProcessor.DASH,
+				this.contentProcessor.getSourceContent().getRawContent().length());
+		difference = this.contentProcessor.carrotMaskBuilder(
+				this.contentProcessor.asteriskMaskBuilder(difference));
 		LOGGER.info("\n\n"
 				+ this.contentProcessor.getSourceContent().getRawContent()
 				+ "\n"
-				+ differenceBuilder
+				+ difference
 				+ "\n"
-				+ this.contentProcessor.cleanContentBuilder());
+				+ this.contentProcessor.getCleanContent());
 	}
 }

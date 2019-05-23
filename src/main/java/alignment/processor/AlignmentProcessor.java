@@ -1,5 +1,8 @@
 package alignment.processor;
 
+import alignment.processor.content.ContentLoader;
+import alignment.processor.content.ContentProcessor;
+
 import java.util.logging.Logger;
 
 /**
@@ -12,6 +15,7 @@ public class AlignmentProcessor {
 	public static void main(String[] args) {
 		ContentLoader contentLoader = new ContentLoader();
 		ContentProcessor contentProcessor = new ContentProcessor(contentLoader.getSourceContent());
-		new ProcessedContentPrinter(contentProcessor).print();
+		ProcessedContentPrinter processedContentPrinter = new ProcessedContentPrinter(contentProcessor);
+		processedContentPrinter.print();
 	}
 }

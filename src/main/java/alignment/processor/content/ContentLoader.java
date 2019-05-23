@@ -1,4 +1,4 @@
-package alignment.processor;
+package alignment.processor.content;
 
 import java.io.File;
 import java.io.FileNotFoundException;
