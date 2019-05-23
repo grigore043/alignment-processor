@@ -17,7 +17,7 @@ import com.vaadin.flow.router.Route;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Iterator;
+import java.util.ArrayList;
 import java.util.List;
 
 @HtmlImport("styles/shared-styles.html")
@@ -28,13 +28,14 @@ public class MainView extends VerticalLayout {
 	private static final String INPUT_IN_PROGRESS = "Input...";
 	private static final String PROCESSING = "Processing...";
 	private static final String DONE = "Done";
+	private static final String EASY_READ_RESULT = "Easy read result";
+	private static final String CLICKABLE_RESULT = "Clickable result";
 
-	private Button processButton = new Button("Process");
 	private TextField rawContentTextField = new TextField("Raw content");
 	private TextField cleanedContentTextField = new TextField("Cleaned content");
 	private Label processingStatusLabel = new Label(FILL_THE_INPUTS);
 	private Div resultSectionClickable = new Div();
-	private Div resultSectionNonClickable = new Div();
+	private Div resultSectionEasyRead = new Div();
 
 	private StringBuilder dashStringBuilder;
 
@@ -42,20 +43,21 @@ public class MainView extends VerticalLayout {
 	public MainView() {
 		addClassName("main-view");
 		H1 header = new H1("Alignment Processor");
+		Button processButton = new Button("Process");
 		setHorizontalComponentAlignment(Alignment.END, processButton);
 
 		rawContentTextField.setWidth("100%");
 		cleanedContentTextField.setWidth("100%");
-		processButton.addClickListener(getButtonClickListener());
-		rawContentTextField.addFocusListener(getFocusListener());
-		cleanedContentTextField.addFocusListener(getFocusListener());
+		processButton.addClickListener(createProcessButtonClickListener());
+		rawContentTextField.addFocusListener(createInputFocusListener());
+		cleanedContentTextField.addFocusListener(createInputFocusListener());
 
 		add(header, rawContentTextField, cleanedContentTextField, processingStatusLabel, processButton);
-		add(resultSectionClickable, resultSectionNonClickable);
+		add(resultSectionClickable, resultSectionEasyRead);
 	}
 
 	@NotNull
-	private ComponentEventListener<ClickEvent<Button>> getButtonClickListener() {
+	private ComponentEventListener<ClickEvent<Button>> createProcessButtonClickListener() {
 		return buttonClickEvent -> {
 			String rawContent = this.rawContentTextField.getValue();
 			String cleanedContent = this.cleanedContentTextField.getValue();
@@ -65,29 +67,10 @@ public class MainView extends VerticalLayout {
 				this.processingStatusLabel.setText("Cleaned content cannot be longer that raw content");
 			} else {
 				resultSectionClickable.removeAll();
-				resultSectionNonClickable.removeAll();
-				SourceContent sourceContent = new SourceContent(rawContent, cleanedContent);
-				ContentProcessor contentProcessor = new ContentProcessor(sourceContent);
+				resultSectionEasyRead.removeAll();
+				ContentProcessor contentProcessor = new ContentProcessor(new SourceContent(rawContent, cleanedContent));
 				if (contentProcessor.canBeProcessed()) {
-					processingStatusLabel.setText(PROCESSING);
-					String dashString = StringUtils.repeat(
-							ContentProcessor.DASH,
-							contentProcessor.getSourceContent().getRawContent().length());
-					Div rawContentStringDiv = new Div();
-					rawContentStringDiv.setText(sourceContent.getRawContent());
-					Div differenceStringDiv = new Div();
-					differenceStringDiv.setText(contentProcessor.
-							asteriskMaskBuilder(contentProcessor.
-									carrotMaskBuilder(dashString)));
-					Div formattedCleanedContentDiv = new Div();
-					formattedCleanedContentDiv.setText(contentProcessor.getCleanContent(ContentProcessor.UNDERSCORE));
-
-					processingStatusLabel.setText(DONE);
-					resultSectionNonClickable.add(
-							rawContentStringDiv,
-							differenceStringDiv,
-							formattedCleanedContentDiv);
-					createSpanPair(contentProcessor, differenceStringDiv.getText());
+					processValidContent(contentProcessor);
 				} else {
 					this.processingStatusLabel.setText("Cleaned content is not part of the raw content");
 				}
@@ -95,15 +78,41 @@ public class MainView extends VerticalLayout {
 		};
 	}
 
-	public void createSpanPair(ContentProcessor contentProcessor, String difference) {
+	private void processValidContent(ContentProcessor contentProcessor) {
+		processingStatusLabel.setText(PROCESSING);
+		String dashString = StringUtils.repeat(
+				ContentProcessor.DASH,
+				contentProcessor.getSourceContent().getRawContent().length());
+		Div rawContentStringDiv = new Div();
+		rawContentStringDiv.setText(contentProcessor.getSourceContent().getRawContent());
+		Div differenceStringDiv = new Div();
+		differenceStringDiv.setText(
+				contentProcessor
+						.asteriskMaskBuilder(
+								contentProcessor
+										.carrotMaskBuilder(dashString)));
+		Div formattedCleanedContentDiv = new Div();
+		formattedCleanedContentDiv.setText(contentProcessor.getCleanContent(ContentProcessor.UNDERSCORE));
+		processingStatusLabel.setText(DONE);
+		resultSectionEasyRead.add(
+				new Label(EASY_READ_RESULT),
+				rawContentStringDiv,
+				differenceStringDiv,
+				formattedCleanedContentDiv);
+		createSpanPair(contentProcessor, differenceStringDiv.getText());
+	}
+
+	private void createSpanPair(ContentProcessor contentProcessor, String difference) {
 		List<String> rawContentList = contentProcessor.getRawContentAsList();
-		List<String> cleanedContentList = contentProcessor.getCleanedContentAsList();
+		ArrayList<String> cleanedContentList = new ArrayList<>(contentProcessor.getCleanedContentAsList());
 		Div rawContentDiv = new Div();
 		Div cleanedContentDiv = new Div();
-		Iterator<String> rawContentIterator = rawContentList.iterator();
-		while (rawContentIterator.hasNext()) {
-			String rawWord = rawContentIterator.next();
-			String cleanedWord = cleanedContentList.stream().filter(rawWord::contains).findFirst().orElse("");
+		for (String rawWord : rawContentList) {
+			String cleanedWord = cleanedContentList
+					.stream()
+					.filter(rawWord::contains)
+					.findFirst()
+					.orElse("");
 			if (!cleanedWord.isEmpty()) {
 				Span rawWordSpan = new Span(rawWord);
 				rawWordSpan.addClassName("pair-" + rawContentList.indexOf(rawWord));
@@ -111,18 +120,11 @@ public class MainView extends VerticalLayout {
 				Span cleanedWordSpan = new Span(cleanedWord);
 				cleanedWordSpan.addClassName(rawWordSpan.getClassName());
 				cleanedContentDiv.add(cleanedWordSpan);
-				ComponentEventListener<ClickEvent<Span>> listener = clickEvent -> {
-					if (rawWordSpan.getClassNames().contains("blue")) {
-						rawWordSpan.getClassNames().remove("blue");
-						cleanedWordSpan.getClassNames().remove("blue");
-					} else {
-						rawWordSpan.addClassName("blue");
-						cleanedWordSpan.addClassName("blue");
-					}
-				};
+				ComponentEventListener<ClickEvent<Span>> listener = createSpanClickEvent(rawWordSpan, cleanedWordSpan);
 				rawWordSpan.addClickListener(listener);
 				cleanedWordSpan.addClickListener(listener);
 				cleanedContentDiv.add(new Span(" "));
+				cleanedContentList.removeIf(cleanedWord::equals);
 			} else {
 				rawContentDiv.add(new Span(rawWord));
 			}
@@ -131,12 +133,27 @@ public class MainView extends VerticalLayout {
 		}
 		Div differenceDiv = new Div();
 		differenceDiv.setText(difference);
-		resultSectionClickable.add(rawContentDiv);
-		resultSectionClickable.add(differenceDiv);
-		resultSectionClickable.add(cleanedContentDiv);
+		resultSectionClickable.add(
+				new Label(CLICKABLE_RESULT),
+				rawContentDiv,
+				differenceDiv,
+				cleanedContentDiv);
 	}
 
-	private ComponentEventListener<FocusEvent<TextField>> getFocusListener() {
+	@NotNull
+	private ComponentEventListener<ClickEvent<Span>> createSpanClickEvent(Span rawWordSpan, Span cleanedWordSpan) {
+		return clickEvent -> {
+			if (rawWordSpan.getClassNames().contains("blue")) {
+				rawWordSpan.getClassNames().remove("blue");
+				cleanedWordSpan.getClassNames().remove("blue");
+			} else {
+				rawWordSpan.addClassName("blue");
+				cleanedWordSpan.addClassName("blue");
+			}
+		};
+	}
+
+	private ComponentEventListener<FocusEvent<TextField>> createInputFocusListener() {
 		return (ComponentEventListener<FocusEvent<TextField>>) componentEvent -> processingStatusLabel.setText(INPUT_IN_PROGRESS);
 	}
 
